@@ -84,3 +84,15 @@ CREATE TABLE "attendee"(
     FOREIGN KEY(event_id) REFERENCES event(event_id),
     FOREIGN KEY(user_id) REFERENCES "user"(user_id)
 );
+
+GRANT ALL PRIVILEGES ON TABLE "user" to nohhy;
+GRANT ALL PRIVILEGES ON TABLE friendship to nohhy;
+GRANT ALL PRIVILEGES ON TABLE subscription to nohhy;
+GRANT ALL PRIVILEGES ON TABLE post to nohhy;
+GRANT ALL PRIVILEGES ON TABLE video_post to nohhy;
+GRANT ALL PRIVILEGES ON TABLE image_post to nohhy;
+GRANT ALL PRIVILEGES ON TABLE text_post to nohhy;
+GRANT ALL PRIVILEGES ON TABLE post_tags to nohhy;
+GRANT ALL PRIVILEGES ON TABLE "like" to nohhy;
+GRANT ALL PRIVILEGES ON TABLE event to nohhy;
+GRANT ALL PRIVILEGES ON TABLE attendee to nohhy;
