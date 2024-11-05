@@ -21,13 +21,13 @@ CREATE TABLE Subscription(
 );
 
 CREATE TABLE Post(
-    postId INT GENERATED DEFAULT AS IDENTITY PRIMARY KEY,
+    postId INT GENERATED DEFAULT AS IDENTITY PRIMARY KEY
+        CHECK(postId > 0),
     userId INT NOT NULL,
     title VARCHAR(255), -- allowed to be null
     date TIMESTAMP NOT NULL,
     place VARCHAR(255), -- allowed to be null
     FOREIGN KEY(userId) REFERENCES "User"(userId),
-    CHECK(postId > 0)
 );
 
 CREATE TABLE VideoPost(
@@ -52,10 +52,10 @@ CREATE TABLE TextPost(
 
 CREATE TABLE PostTags(
     postId INT,
-    tag VARCHAR(255),
+    tag VARCHAR(255)
+        CHECK(tag IN ('crypto', 'studying', 'question', 'social')),
     PRIMARY KEY(postId, tag),
     FOREIGN KEY(postId) REFERENCES Post(postId),
-    CHECK(tag IN ('crypto', 'studying', 'question', 'social'))
 );
 
 CREATE TABLE "Like"(
