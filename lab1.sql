@@ -75,4 +75,13 @@ CREATE TABLE Event(
     startDate DATE NOT NULL,
     endDate DATE NOT NULL,
     CHECK(startDate <= endDate)
-)
+);
+
+CREATE TABLE Attendee(
+    eventId INT,
+    userId INT,
+    timestamp TIMESTAMP NOT NULL,
+    PRIMARY KEY(eventId, userId),
+    FOREIGN KEY(eventId) REFERENCES Event(eventId),
+    FOREIGN KEY(userId) REFERENCES "User"(userId)
+);
