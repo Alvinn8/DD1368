@@ -1,0 +1,33 @@
+CREATE TABLE "Employee"(
+    employeeId INT PRIMARY KEY,
+    phoneNumber INT,
+    name VARCHAR(255)
+)
+
+CREATE TABLE "Mentor"(
+    employeeIdA INT,
+    employeeIdB INT,
+    PRIMARY KEY(employeeIdA, employeeIdB),
+    FOREIGN KEY(employeeIdA) REFERENCES Employee(employeeId),
+    FOREIGN KEY(employeeIdB) REFERENCES Employee(employeeId),
+)
+
+CREATE TABLE "Department"(
+    departmentName VARCHAR(255) PRIMARY KEY,
+    buildingNumber INT,
+)
+
+CREATE TABLE "WorksAt"(
+    employeeId INT,
+    departmentName VARCHAR(255),
+    startDate DATE,
+    PRIMARY KEY(employeeId, departmentName),
+    FOREIGN KEY(employeeId) REFERENCES "Employee"(employeeId),
+    FOREIGN KEY(departmentName) REFERENCES "Department"(departmentName)
+)
+
+CREATE TABLE Doctor(
+    specialization VARCHAR(255),
+    roomNr INT,
+    employeeId INT
+)
