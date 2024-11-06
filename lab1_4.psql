@@ -1,0 +1,13 @@
+SELECT full_name FROM "user";
+
+SELECT * FROM friendship;
+
+SELECT * FROM text_post JOIN post ON text_post.post_id = post.post_id;
+
+SELECT * FROM video_post JOIN post ON video_post.post_id = post.post_id;
+
+SELECT * FROM image_post JOIN post ON image_post.post_id = post.post_id;
+
+SELECT * FROM event;
+
+SELECT * FROM subscription;
