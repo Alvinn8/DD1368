@@ -76,7 +76,7 @@ CREATE TABLE event(
     CHECK(startDate <= endDate)
 );
 
-CREATE TABLE "attendee"(
+CREATE TABLE attendee(
     event_id INT,
     user_id INT,
     timestamp TIMESTAMP NOT NULL,
