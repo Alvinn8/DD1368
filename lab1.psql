@@ -7,8 +7,8 @@ CREATE TABLE friendship(
     user_id_a INT,
     user_id_b INT,
     PRIMARY KEY(user_id_a, user_id_b),
-    FOREIGN KEY(user_id_a) REFERENCES "user"(user_id),
-    FOREIGN KEY(user_id_b) REFERENCES "user"(user_id)
+    FOREIGN KEY(user_id_a) REFERENCES "user"(user_id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id_b) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE subscription(
@@ -16,7 +16,7 @@ CREATE TABLE subscription(
     user_id INT NOT NULL,
     payment_date TIMESTAMP NOT NULL,
     payment_method VARCHAR(10) NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES "user"(user_id)
+    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE post(
@@ -26,27 +26,27 @@ CREATE TABLE post(
     title VARCHAR(255), -- allowed to be null
     date TIMESTAMP NOT NULL,
     place VARCHAR(255), -- allowed to be null
-    FOREIGN KEY(user_id) REFERENCES "user"(user_id)
+    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE video_post (
     post_id INT PRIMARY KEY,
     video_url VARCHAR(2048) NOT NULL,
     codec VARCHAR(255) NOT NULL,
-    FOREIGN KEY(post_id) REFERENCES post(post_id)
+    FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE
 );
 
 CREATE TABLE image_post(
     post_id INT PRIMARY KEY,
     image_url VARCHAR(2048) NOT NULL,
     filter VARCHAR(255), -- allowed to be null
-    FOREIGN KEY(post_id) REFERENCES post(post_id)
+    FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE
 );
 
 CREATE TABLE text_post(
     post_id INT PRIMARY KEY,
     text_content TEXT NOT NULL,
-    FOREIGN KEY(post_id) REFERENCES post(post_id)
+    FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE
 );
 
 CREATE TABLE post_tags(
@@ -54,7 +54,7 @@ CREATE TABLE post_tags(
     tag VARCHAR(255)
         CHECK(tag IN ('crypto', 'studying', 'question', 'social')),
     PRIMARY KEY(post_id, tag),
-    FOREIGN KEY(post_id) REFERENCES post(post_id)
+    FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE
 );
 
 CREATE TABLE "like"(
@@ -62,8 +62,8 @@ CREATE TABLE "like"(
     user_id INT,
     timestamp TIMESTAMP NOT NULL,
     PRIMARY KEY(post_id, user_id),
-    FOREIGN KEY(post_id) REFERENCES post(post_id),
-    FOREIGN KEY(user_id) REFERENCES "user"(user_id)
+    FOREIGN KEY(post_id) REFERENCES post(post_id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE event(
@@ -81,8 +81,8 @@ CREATE TABLE attendee(
     user_id INT,
     timestamp TIMESTAMP NOT NULL,
     PRIMARY KEY(event_id, user_id),
-    FOREIGN KEY(event_id) REFERENCES event(event_id),
-    FOREIGN KEY(user_id) REFERENCES "user"(user_id)
+    FOREIGN KEY(event_id) REFERENCES event(event_id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
 );
 
 GRANT ALL PRIVILEGES ON TABLE "user" to nohhy;
