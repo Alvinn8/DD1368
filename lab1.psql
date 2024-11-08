@@ -16,8 +16,8 @@ CREATE TABLE subscription(
     user_id INT NOT NULL,
     payment_date TIMESTAMP NOT NULL,
     payment_method VARCHAR(10) NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
-    CHECK(payment_method IN ('klarna', 'Swish', 'Card', 'Bitcoin'))
+    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE,
+    CHECK(payment_method IN ('klarna', 'swish', 'card', 'bitcoin'))
 );
 
 CREATE TABLE post(
