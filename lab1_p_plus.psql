@@ -1,33 +1,45 @@
+-- "works at" relation combined into Employee since it is M:1 relation
+-- "mentor" relation combined into Employee since it is 1:1 relation
 CREATE TABLE "Employee"(
-    employeeId INT PRIMARY KEY,
-    phoneNumber INT,
-    name VARCHAR(255)
-)
-
-CREATE TABLE "Mentor"(
-    employeeIdA INT,
-    employeeIdB INT,
-    PRIMARY KEY(employeeIdA, employeeIdB),
-    FOREIGN KEY(employeeIdA) REFERENCES Employee(employeeId),
-    FOREIGN KEY(employeeIdB) REFERENCES Employee(employeeId),
-)
+    employe_id INT PRIMARY KEY,
+    mentor_id INT,
+    phone_number INT,
+    name VARCHAR(255),
+    department_mame VARCHAR(255),
+    start_date DATE,
+    FOREIGN KEY(department_mame) REFERENCES "Department"(department_mame)
+    FOREIGN KEY(mentor_id) REFERENCES "Employee"(employe_id),
+);
 
 CREATE TABLE "Department"(
-    departmentName VARCHAR(255) PRIMARY KEY,
-    buildingNumber INT,
-)
+    department_mame VARCHAR(255) PRIMARY KEY,
+    building_nr INT
+);
 
-CREATE TABLE "WorksAt"(
-    employeeId INT,
-    departmentName VARCHAR(255),
-    startDate DATE,
-    PRIMARY KEY(employeeId, departmentName),
-    FOREIGN KEY(employeeId) REFERENCES "Employee"(employeeId),
-    FOREIGN KEY(departmentName) REFERENCES "Department"(departmentName)
-)
-
-CREATE TABLE Doctor(
+CREATE TABLE "Doctor"(
+    employe_id INT PRIMARY KEY,
     specialization VARCHAR(255),
-    roomNr INT,
-    employeeId INT
-)
+    room_nr INT,
+    FOREIGN KEY(employe_id) REFERENCES "Employee"(employe_id) ON DELETE CASCADE
+);
+
+CREATE TABLE "Nurse"(
+    employe_id INT PRIMARY KEY,
+    degree VARCHAR(255),
+    FOREIGN KEY(employe_id) REFERENCES "Employee"(employe_id) ON DELETE CASCADE
+);
+
+CREATE TABLE "Patient"(
+    patient_id INT PRIMARY KEY,
+    diagnoses VARCHAR(255),
+    name VARCHAR(255),
+    age INT,
+);
+
+CREATE TABLE "Treating"(
+    employe_id INT,
+    patient_id INT,
+    PRIMARY KEY(employe_id, patient_id),
+    FOREIGN KEY(employe_id) REFERENCES "Employee"(employe_id) ON DELETE CASCADE,
+    FOREIGN KEY(patient_id) REFERENCES "Patient"(patient_id) ON DELETE CASCADE
+);  
