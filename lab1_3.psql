@@ -94,6 +94,7 @@ INSERT INTO event (user_id, title, place, startDate, endDate) VALUES (
 
 INSERT INTO attendee (event_id, user_id, timestamp) VALUES
     (1, 4, '2024-09-08 13:54:03'),
+    (1, 2, '2024-09-08 13:54:03'),
     (1, 1, '2024-09-08 17:03:51');
 
 INSERT INTO subscription (user_id, payment_date, payment_method) VALUES

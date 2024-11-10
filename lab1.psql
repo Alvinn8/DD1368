@@ -74,6 +74,7 @@ CREATE TABLE event(
     place VARCHAR(255) NOT NULL,
     startDate DATE NOT NULL,
     endDate DATE NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES "user"(user_id) ON DELETE CASCADE,
     CHECK(startDate <= endDate)
 );
 
