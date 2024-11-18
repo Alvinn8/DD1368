@@ -1,0 +1,5 @@
+SELECT title, STRING_AGG(tag, ', ') AS tags
+FROM post
+NATURAL JOIN posttag
+GROUP BY post.postid
+ORDER BY title;
