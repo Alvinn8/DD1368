@@ -3,3 +3,20 @@ FROM post
 NATURAL JOIN posttag
 GROUP BY post.postid
 ORDER BY title;
+
+SELECT postid, title, rank FROM
+(
+    SELECT postid, title, RANK() OVER (
+    	PARTITION BY tag
+    	ORDER BY likes DESC
+    ) AS rank
+    FROM (
+    	SELECT post.postid, title, COUNT(*) AS likes, tag
+    	FROM post
+    	JOIN likes ON likes.postid = post.postid
+    	JOIN posttag ON posttag.postid = post.postid
+    	GROUP BY post.postid, tag
+    ) post_and_likes
+    WHERE tag = '#leadership'
+) AS result
+WHERE rank <= 5;
