@@ -69,21 +69,12 @@ NATURAL JOIN (
     GROUP BY userid
 ) AS sub
 LEFT JOIN (
-    SELECT
-        userid,
-        COUNT(*) > 0 AS has_friend
-    FROM friend
-    GROUP BY userid
+    SELECT DISTINCT(userid), true AS has_friend FROM friend
 ) AS f1
 ON f1.userid = users.userid
 LEFT JOIN (
-    SELECT
-        friendid,
-        COUNT(*) > 0 AS has_friend
-    FROM friend
-    GROUP BY friendid
+    SELECT DISTINCT(friendid), true AS has_friend FROM friend
 ) AS f2
 ON f2.friendid = users.userid
 WHERE date_part('month', registration_date) = 1
 ORDER BY name;
-
