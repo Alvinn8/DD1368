@@ -78,3 +78,22 @@ LEFT JOIN (
 ON f2.friendid = users.userid
 WHERE date_part('month', registration_date) = 1
 ORDER BY name;
+
+/* Assignment 5 */
+WITH RECURSIVE rec AS (
+    SELECT users.userid, name, friendid as friend_id
+    FROM users
+    JOIN friend
+    ON friend.userid = users.userid
+    WHERE users.userid = 20
+
+    UNION
+
+    SELECT users.userid, users.name, friend.friendid as friend_id
+    FROM users
+    JOIN rec
+    ON users.userid = rec.friend_id
+    LEFT JOIN friend
+    ON friend.userid = users.userid
+)
+SELECT * FROM rec;
