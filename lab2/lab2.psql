@@ -30,8 +30,8 @@ SELECT
     weeks.week,
     COALESCE(new_customers, 0) AS new_customers,
     COALESCE(kept_customers, 0) AS kept_customers,
-    COALESCE(activity, 0) AS kept_customers
-FROM GENERATE_SERIES(0, 30) AS weeks(week)
+    COALESCE(activity, 0) AS activity
+FROM GENERATE_SERIES(1, 30) AS weeks(week)
 LEFT JOIN (
     SELECT
         week,
