@@ -1,8 +1,12 @@
+/* Assignment 1 */
+
 SELECT title, STRING_AGG(tag, ', ') AS tags
 FROM post
 NATURAL JOIN posttag
 GROUP BY post.postid
 ORDER BY title;
+
+/* Assignment 2 */
 
 SELECT postid, title, rank FROM
 (
@@ -20,3 +24,40 @@ SELECT postid, title, rank FROM
     WHERE tag = '#leadership'
 ) AS result
 WHERE rank <= 5;
+
+/* Assignment 3 */
+SELECT
+    weeks.week,
+    COALESCE(new_customers, 0) AS new_customers,
+    COALESCE(kept_customers, 0) AS kept_customers,
+    COALESCE(activity, 0) AS kept_customers
+FROM GENERATE_SERIES(0, 30) AS weeks(week)
+LEFT JOIN (
+    SELECT
+        week,
+        SUM(CASE WHEN prev_subs = 0 THEN 1 ELSE 0 END) AS new_customers,
+        SUM(CASE WHEN prev_subs > 0 THEN 1 ELSE 0 END) AS kept_customers
+    FROM (
+        SELECT
+            date_part('week', s1.date) AS week,
+            COUNT(s2.userid) AS prev_subs
+        FROM subscription AS s1
+        LEFT JOIN subscription AS s2
+            ON s1.userid = s2.userid
+            AND s2.date < s1.date
+            AND s1.subscriptionid != s2.subscriptionid
+        GROUP BY s1.subscriptionid
+    ) subscriptions
+    WHERE week <= 30
+    GROUP BY week
+) AS customer_data
+ON customer_data.week = weeks.week
+LEFT JOIN (
+    SELECT
+        date_part('week', date) AS week,
+        COUNT(*) AS activity
+    FROM post
+    GROUP BY week
+) AS activity_data
+ON activity_data.week = weeks.week
+ORDER BY week;
