@@ -35,18 +35,13 @@ FROM GENERATE_SERIES(1, 30) AS weeks(week)
 LEFT JOIN (
     SELECT
         week,
-        SUM(CASE WHEN prev_subs = 0 THEN 1 ELSE 0 END) AS new_customers,
-        SUM(CASE WHEN prev_subs > 0 THEN 1 ELSE 0 END) AS kept_customers
+        SUM(CASE WHEN is_new THEN 1 ELSE 0 END) AS new_customers,
+        SUM(CASE WHEN NOT is_new THEN 1 ELSE 0 END) AS kept_customers
     FROM (
         SELECT
-            date_part('week', s1.date) AS week,
-            COUNT(s2.userid) AS prev_subs
-        FROM subscription AS s1
-        LEFT JOIN subscription AS s2
-            ON s1.userid = s2.userid
-            AND s2.date < s1.date
-            AND s1.subscriptionid != s2.subscriptionid
-        GROUP BY s1.subscriptionid
+            date_part('week', date) AS week,
+            MIN(date) OVER (PARTITION BY userid) = date as is_new
+        FROM subscription
     ) subscriptions
     WHERE week <= 30
     GROUP BY week
