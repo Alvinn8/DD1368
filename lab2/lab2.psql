@@ -56,3 +56,34 @@ LEFT JOIN (
 ) AS activity_data
 ON activity_data.week = weeks.week
 ORDER BY week;
+
+/* Assignment 4 */
+SELECT
+    name,
+    COALESCE(f1.has_friend OR f2.has_friend, false) AS has_friend,
+    registration_date
+FROM users
+NATURAL JOIN (
+    SELECT userid, MIN(date) as registration_date
+    FROM subscription
+    GROUP BY userid
+) AS sub
+LEFT JOIN (
+    SELECT
+        userid,
+        COUNT(*) > 0 AS has_friend
+    FROM friend
+    GROUP BY userid
+) AS f1
+ON f1.userid = users.userid
+LEFT JOIN (
+    SELECT
+        friendid,
+        COUNT(*) > 0 AS has_friend
+    FROM friend
+    GROUP BY friendid
+) AS f2
+ON f2.friendid = users.userid
+WHERE date_part('month', registration_date) = 1
+ORDER BY name;
+
