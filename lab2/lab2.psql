@@ -40,7 +40,7 @@ LEFT JOIN (
     FROM (
         SELECT
             date_part('week', date) AS week,
-            MIN(date) OVER (PARTITION BY userid) = date as is_new
+            MIN(date) OVER (PARTITION BY userid) = date AS is_new
         FROM subscription
     ) subscriptions
     WHERE week <= 30
