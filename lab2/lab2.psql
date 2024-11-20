@@ -81,7 +81,7 @@ ORDER BY name;
 
 /* Assignment 5 */
 WITH RECURSIVE rec AS (
-    SELECT users.userid, name, friendid as friend_id
+    SELECT name, users.userid as user_id, friendid as friend_id
     FROM users
     JOIN friend
     ON friend.userid = users.userid
@@ -89,7 +89,7 @@ WITH RECURSIVE rec AS (
 
     UNION
 
-    SELECT users.userid, users.name, friend.friendid as friend_id
+    SELECT users.name, users.userid as user_id, friend.friendid as friend_id
     FROM users
     JOIN rec
     ON users.userid = rec.friend_id
@@ -97,3 +97,12 @@ WITH RECURSIVE rec AS (
     ON friend.userid = users.userid
 )
 SELECT * FROM rec;
+
+/* Assignment P+ */
+SELECT name, COUNT(likes) > 50 AS has_many_likes FROM users
+JOIN post
+    ON users.userid = post.userid
+    AND date_part('month', date) = 3
+JOIN likes ON likes.postid = post.postid
+GROUP BY users.userid
+ORDER BY name;
