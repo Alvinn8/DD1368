@@ -99,7 +99,7 @@ WITH RECURSIVE rec AS (
 SELECT * FROM rec;
 
 /* Assignment P+ */
-SELECT name, COUNT(likes) > 50 AS has_many_likes FROM users
+SELECT name, COUNT(likes) >= 50 AS has_many_likes FROM users
 JOIN post
     ON users.userid = post.userid
     AND date_part('month', date) = 3
