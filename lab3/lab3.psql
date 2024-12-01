@@ -1,0 +1,131 @@
+/* Assignment 1 */
+SELECT
+    name, num
+FROM (
+    SELECT
+        country.name,
+        COUNT(*) AS num,
+        RANK() OVER (ORDER BY COUNT(*)) AS rank
+    FROM country
+    JOIN borders
+        ON country1 = country.code
+        OR country2 = country.code
+    GROUP BY country.code
+    ORDER BY num
+) data
+WHERE rank = 1;
+
+/* Assignment 2 */
+SELECT
+    language.name,
+    ROUND(SUM(country.population * COALESCE(spoken.percentage, 0) / 100)) as numberspeakers
+FROM language
+JOIN spoken ON language.name = spoken.language
+JOIN country ON country.code = spoken.country
+GROUP BY language.name
+ORDER BY numberspeakers DESC;
+
+/* Assignment 3 */
+SELECT
+    country1,
+    e1.gdp as gdp1,
+    country2,
+    e2.gdp as gdp2,
+    ROUND(CASE WHEN e1.gdp > e2.gdp
+        THEN e1.gdp / e2.gdp
+        ELSE e2.gdp / e1.gdp
+    END) as ratio
+FROM borders
+JOIN economy e1 ON country1 = e1.country
+JOIN economy e2 ON country2 = e2.country
+WHERE e1.gdp IS NOT NULL
+AND e2.gdp IS NOT NULL
+ORDER BY ratio DESC;
+
+/*
+
+Part 2: Views
+Questions for the presentation:
+
+1. When would a view be beneficial compared to regular
+   queries? For what reasons?
+
+If a subquery needs to be used often it can be
+convenient to create a view with that subquery so that
+it can be queried from more easily. If the view is
+a materialised view it will additionally be faster since
+the data is already stored and the subquery does not
+need to be executed.
+
+2. What is stored in the database for non-materialised
+   or materialised views respectively?
+
+For a non-materialised view, nothing extra is stored
+in the database. The view is created when it is needed.
+Eg. when a view is queried, the database manager will
+execute the query to generate the view almost like a
+subquery.
+
+3. Name one benefit of using materialised views over
+   non-materialised ones
+
+Materialised views are faster to query because they are
+stored in the database and can therefore be fetched
+quicker since they do not need to be queried to be
+created.
+
+4. Name one benefit of using non-materialised views over
+   materialised ones
+
+A non-materialised view is faster to update because it
+does not need to be recalculated every time an update
+occurs like a materialised view would.
+
+*/
+
+/* Assignment P+ 1 */
+WITH RECURSIVE rec AS (
+    SELECT code, 0 AS distance FROM country WHERE code = 'S'
+
+    UNION
+
+    SELECT
+        (CASE WHEN borders.country1 = rec.code
+            THEN borders.country2
+            ELSE borders.country1
+        END) AS code,
+        (rec.distance + 1) AS distance
+    FROM rec
+    JOIN borders
+        ON borders.country1 = code
+        OR borders.country2 = code
+    WHERE distance < 5
+)
+SELECT country.code, country.name, MIN(distance) AS min
+FROM rec
+JOIN country ON country.code = rec.code
+GROUP BY country.code
+HAVING MIN(distance) > 0
+ORDER BY min;
+
+/* Assignment P+ 2 but probably redo it */
+WITH RECURSIVE rec AS (
+    SELECT
+        name,
+        CAST(name AS CHARACTER VARYING) AS path,
+        1 AS numrivers,
+        length AS totlength
+    FROM river
+    WHERE river.name IN ('Nile', 'Amazonas', 'Yangtze', 'Rhein', 'Donau', 'Mississippi')
+
+    UNION
+
+    SELECT
+        rec.name,
+        CONCAT(rec.path, '-', rec.name),
+        (rec.numrivers + 1) AS numrivers,
+        (rec.totlength + length) AS totlength
+    FROM rec
+    JOIN river ON river.river = rec.name
+)
+SELECT * FROM rec;
