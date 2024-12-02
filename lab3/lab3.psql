@@ -17,24 +17,23 @@ WHERE rank = 1;
 
 /* Assignment 2 */
 SELECT
-    language.name,
-    ROUND(SUM(country.population * COALESCE(spoken.percentage, 0) / 100)) as numberspeakers
-FROM language
-JOIN spoken ON language.name = spoken.language
+    language,
+    ROUND(SUM(country.population * COALESCE(percentage, 0) / 100)) as numberspeakers
+FROM spoken
 JOIN country ON country.code = spoken.country
-GROUP BY language.name
+GROUP BY language
 ORDER BY numberspeakers DESC;
 
 /* Assignment 3 */
 SELECT
     country1,
-    e1.gdp as gdp1,
+    e1.gdp AS gdp1,
     country2,
-    e2.gdp as gdp2,
+    e2.gdp AS gdp2,
     ROUND(CASE WHEN e1.gdp > e2.gdp
         THEN e1.gdp / e2.gdp
         ELSE e2.gdp / e1.gdp
-    END) as ratio
+    END) AS ratio
 FROM borders
 JOIN economy e1 ON country1 = e1.country
 JOIN economy e2 ON country2 = e2.country
@@ -108,24 +107,39 @@ GROUP BY country.code
 HAVING MIN(distance) > 0
 ORDER BY min;
 
-/* Assignment P+ 2 but probably redo it */
-WITH RECURSIVE rec AS (
-    SELECT
-        name,
-        CAST(name AS CHARACTER VARYING) AS path,
-        1 AS numrivers,
-        length AS totlength
-    FROM river
-    WHERE river.name IN ('Nile', 'Amazonas', 'Yangtze', 'Rhein', 'Donau', 'Mississippi')
+/* Assignment P+ 2 */
+SELECT
+    RANK() OVER (ORDER BY numrivers) AS rank,
+    path,
+    numrivers,
+    totlength
+FROM (
+    WITH RECURSIVE rec AS (
+        SELECT
+            name AS mainriver,
+            name,
+            CAST(name AS CHARACTER VARYING) AS path,
+            1 AS numrivers,
+            length AS totlength
+        FROM river
+        WHERE name IN ('Nile', 'Amazonas', 'Yangtze', 'Rhein', 'Donau', 'Mississippi')
 
-    UNION
+        UNION
 
+        SELECT
+            mainriver,
+            river.name,
+            CONCAT(rec.path, '-', river.name) AS path,
+            (rec.numrivers + 1) AS numrivers,
+            (rec.totlength + length) AS totlength
+
+        FROM rec
+        JOIN river ON river.river = rec.name
+    )
     SELECT
-        rec.name,
-        CONCAT(rec.path, '-', rec.name),
-        (rec.numrivers + 1) AS numrivers,
-        (rec.totlength + length) AS totlength
+        RANK() OVER (PARTITION BY mainriver ORDER BY numrivers DESC) AS inner_rank,
+        *
     FROM rec
-    JOIN river ON river.river = rec.name
-)
-SELECT * FROM rec;
+) AS x
+WHERE inner_rank = 1
+ORDER BY rank, totlength DESC;
