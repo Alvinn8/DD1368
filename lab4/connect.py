@@ -1,5 +1,6 @@
 import psycopg2
 from dotenv import load_dotenv
+import pandas as pd
 import os
 
 """
@@ -23,30 +24,26 @@ print(conn)
 # Create a cursor. The cursor allows you to execute database queries.
 cur = conn.cursor()
 
+def to_dict(column_names, values):
+    return {k : v for (k, v) in zip(column_names, values)}
 
-# Simple function to get all books with a specific genre.
-def get_book_title_by_genre():
-    genre = input("Please enter a genre: ")
-    query = f"SELECT books.title FROM books LEFT JOIN genre ON books.bookid = genre.bookid WHERE genre.genre = '{genre}'"
+def display_result(columns, result):
+    rows = [[x[i] for x in result] for i in range(len(columns))]
+    d = to_dict(columns, rows)
+    df = pd.DataFrame.from_dict(d)
+    print(df)
+
+def search_airport(airport_name : str) -> None:
+    columns = ["name", "iatacode", "country"]
+
+    query = f"SELECT {','.join(columns)} FROM airport WHERE name ILIKE '%%{airport_name}%%'"
     cur.execute(query)
     result = cur.fetchall()
-    titles = [row[0] for row in result]
 
-    print(titles)
+    display_result(columns, result)
+
 
 if __name__ == "__main__":
-    # Example:
-    # Execute a query which returns all genres including the genre id.
-    cur.execute("SELECT * from genre ")
 
-    # Print the first row returned.
-    print(cur.fetchone())
-    
-    # Print the next row returned.
-    print(cur.fetchone())
-    
-    # Print all the remaining rows returned.
-    print(cur.fetchall())
-    
-    # Close the connection to the database.
+    search_airport(input("Search airport: "))
     conn.close()
