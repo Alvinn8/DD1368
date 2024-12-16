@@ -1,4 +1,6 @@
 import psycopg2
+from dotenv import load_dotenv
+import os
 
 """
 Note: It's essential never to include database credentials in code pushed to GitHub. 
@@ -7,12 +9,15 @@ However, in this particular exercise, we are allowing it for simplicity, as the 
 Remember to follow best practices for secure coding in production environments.
 """
 
+load_dotenv()
+
 # Acquire a connection to the database by specifying the credentials.
 conn = psycopg2.connect(
-    host="psql-dd1368-ht23.sys.kth.se", 
-    database="--Please fill--",
-    user="--Please fill--",
-    password="--Please fill--")
+    host=os.getenv("HOST"), 
+    database=os.getenv("DATABASE"),
+    user=os.getenv("USER"),
+    password=os.getenv("PASSWORD")
+    )
 print(conn)
 
 # Create a cursor. The cursor allows you to execute database queries.
