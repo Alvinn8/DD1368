@@ -17,12 +17,16 @@ conn = psycopg2.connect(
     host=os.getenv("HOST"), 
     database=os.getenv("DATABASE"),
     user=os.getenv("DB_USER"),
-    password=os.getenv("DB-PASSWORD")
+    password=os.getenv("DB_PASSWORD")
     )
-print(conn)
 
 # Create a cursor. The cursor allows you to execute database queries.
 cur = conn.cursor()
+
+cur.execute("""
+    PREPARE search_country (text) AS
+    SELECT name, iatacode, country FROM airport WHERE name ILIKE $1
+""")
 
 def to_dict(column_names, values):
     return {k : v for (k, v) in zip(column_names, values)}
@@ -35,11 +39,13 @@ def display_result(columns, result):
 
 def search_airport(airport_name : str) -> None:
     columns = ["name", "iatacode", "country"]
+    airport_query = '%' + airport_name + '%'
 
-    query = f"SELECT {','.join(columns)} FROM airport WHERE name ILIKE '%%{airport_name}%%'"
-    cur.execute(query)
+    query = "EXECUTE search_country (%s)"
+    cur.execute(query, (airport_query,))
     result = cur.fetchall()
 
+    print("result =", result)
     display_result(columns, result)
 
 
