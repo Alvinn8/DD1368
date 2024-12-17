@@ -374,7 +374,7 @@ def parse_desert_args(inp_arr : List[str]):
         return
 
     try: 
-        create_desert(inp_arr[1], int(inp_arr[2]), inp_arr[3], inp_arr[4], GeoCoord(inp_arr[5]))
+        create_desert(inp_arr[1], int(inp_arr[2]), inp_arr[3], inp_arr[4], GeoCoord.from_string(inp_arr[5]))
     except Exception as e:
         print(e)
 
@@ -393,9 +393,6 @@ def parse_display_args(inp_arr : List[str]):
     print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
 
 def print_help_page():
-    """
-    Prints a formatted help page for the available commands.
-    """
     print("\n" + "=" * 107)
     print("            HELP PAGE")
     print("=" * 107)
@@ -424,6 +421,4 @@ def main():
             case _: print(f"Unkown command: {inp_arr[0]}")
 
 if __name__ == "__main__":
-    # create_desert("test", 100, "Attikis", "Greece", GeoCoord(0, 0))
-
     main()
