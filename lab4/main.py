@@ -412,7 +412,7 @@ def main():
             inp = input("-> ").strip()
         except KeyboardInterrupt:
             print("\nBye!")
-            break
+            exit()
         inp_arr = inp.split()
 
         match inp_arr[0]:
