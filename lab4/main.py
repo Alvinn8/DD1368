@@ -36,7 +36,7 @@ cur.execute("""
 )
 
 cur.execute("""
-    PREPARE check_province (text) AS
+    PREPARE check_province (text, text) AS
     SELECT
         name,
         country
@@ -83,7 +83,7 @@ cur.execute("""
 )
 
 cur.execute("""
-    PREPARE insert_desert (text) AS
+    PREPARE insert_desert (text, numeric, geocoord) AS
     INSERT INTO desert (name, area, coordinates) 
     VALUES (
         $1, $2, $3
@@ -93,7 +93,7 @@ cur.execute("""
 )
 
 cur.execute("""
-    PREPARE insert_geo_desert (text) AS
+    PREPARE insert_geo_desert (text, text, text) AS
     INSERT INTO geo_desert (desert, country, province) 
     VALUES (
         $1, $2, $3
