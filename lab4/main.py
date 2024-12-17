@@ -101,6 +101,14 @@ cur.execute("""
     """
 )
 
+cur.execute("""
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+""")
+
+TABLES = [t["table_name"] for t in cur.fetchall()]
+
 class GeoCoord:
     def __init__(self, latitude : float, longitude : float):
         self.latitude = latitude
@@ -109,6 +117,19 @@ class GeoCoord:
     @property
     def as_tuple(self) -> Tuple[float]:
         return (self.latitude, self.longitude)
+    
+    @classmethod
+    def from_string(cls, coord_string: str):
+        # Remove parentheses and split the string by the comma
+        try:
+            stripped = coord_string.strip("()")
+            lat_str, lon_str = stripped.split(",")
+            latitude = float(lat_str)
+            longitude = float(lon_str)
+            return cls(latitude, longitude)
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid coordinate string: {coord_string}")
+
 
 def display_result(result, max_rows=10):
     # Convert result to DataFrame if it's not already
@@ -159,6 +180,15 @@ def display_result(result, max_rows=10):
         print(f"{Fore.GREEN}Total Rows: {total_rows}{Style.RESET_ALL}\n")
     else:
         print(f"{Fore.GREEN}Displayed All Rows: {total_rows}{Style.RESET_ALL}\n")
+
+def display_table(table : str, max_rows=10):
+    # check that the table exists, avoids SQL-injection
+    if table in TABLES:
+        cur.execute(f"SELECT * FROM {table}")
+        res = cur.fetchall()
+        display_result(res, max_rows=max_rows)
+    else:
+        print(f"Unkown table {table}")
 
 def fetch_query(query : str, vars : List[Any]):
     cur.execute(query, vars)
@@ -310,25 +340,53 @@ def create_desert(
         )
 
 def parse_airport_args(inp_arr : List[str]):
-    if len(inp_arr) == 2:
-        search_airport(inp_arr[1])
-        return
-    elif len(inp_arr) == 3:
-        search_airport(inp_arr[1], max_rows=int(inp_arr[2]))
-        return
+    try:
+        if len(inp_arr) == 2:
+            search_airport(inp_arr[1])
+            return
+        elif len(inp_arr) == 3:
+            search_airport(inp_arr[1], max_rows=int(inp_arr[2]))
+            return
+    except Exception as e:
+        print(e)
 
-    print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr)}")
+    print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
 
 def parse_language_args(inp_arr : List[str]):
-    if len(inp_arr) == 2:
-        language_speakers(inp_arr[1])
-        return
-    elif len(inp_arr) == 3:
-        language_speakers(inp_arr[1], max_rows=int(inp_arr[2]))
+    try: 
+        if len(inp_arr) == 2:
+            language_speakers(inp_arr[1])
+            return
+        elif len(inp_arr) == 3:
+            language_speakers(inp_arr[1], max_rows=int(inp_arr[2]))
+            return
+    except Exception as e:
+        print(e)
+
+    print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
+
+def parse_desert_args(inp_arr : List[str]):
+    if len(inp_arr) != 6:
+        print(f"Incorrect usage, expected 5 arguments got {len(inp_arr) - 1}")
         return
 
-    print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr)}")
+    try: 
+        create_desert(inp_arr[1], int(inp_arr[2]), inp_arr[3], inp_arr[4], GeoCoord(inp_arr[5]))
+    except Exception as e:
+        print(e)
 
+def parse_display_args(inp_arr : List[str]):
+    try: 
+        if len(inp_arr) == 2:
+            display_table(inp_arr[1])
+            return
+        elif len(inp_arr) == 3:
+            display_table(inp_arr[1], max_rows=int(inp_arr[2]))
+            return
+    except Exception as e:
+        print(e)
+
+    print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
 
 def main():
     while True:
@@ -338,12 +396,12 @@ def main():
         match inp_arr[0]:
             case "airport": parse_airport_args(inp_arr)
             case "language": parse_language_args(inp_arr)
+            case "cdesert": parse_desert_args(inp_arr)
+            case "display": parse_display_args(inp_arr)
+            case "exit": break
             case _: print(f"Unkown command: {inp_arr[0]}")
 
 if __name__ == "__main__":
-    create_desert("test", 100, "Attikis", "Greece", GeoCoord(0, 0))
-
-    cur.execute("SELECT * FROM geo_desert")
-    display_result(cur.fetchall())
+    # create_desert("test", 100, "Attikis", "Greece", GeoCoord(0, 0))
 
     main()
