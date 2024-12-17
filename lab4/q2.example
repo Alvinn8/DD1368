@@ -1,0 +1,4 @@
+user input: 
+    %' ; DROP TABLE fines; --
+full query: 
+    SELECT * FROM mountain WHERE name LIKE '%'; DROP TABLE fines; -- %';
