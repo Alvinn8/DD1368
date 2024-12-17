@@ -308,6 +308,7 @@ def create_desert(
         "EXECUTE insert_geo_desert (%s, %s, %s)", 
         geo_vars
         )
+    cur.connection.commit()
 
 def parse_airport_args(inp_arr : List[str]):
     if len(inp_arr) == 2:
