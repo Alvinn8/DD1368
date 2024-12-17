@@ -1,6 +1,6 @@
 import pandas as pd
 import connect
-from typing import List, Any, Set
+from typing import List, Any, Set, Tuple
 from tabulate import tabulate
 from colorama import Fore, Style
 
@@ -82,10 +82,33 @@ cur.execute("""
     """
 )
 
+cur.execute("""
+    PREPARE insert_desert (text) AS
+    INSERT INTO desert (name, area, coordinates) 
+    VALUES (
+        $1, $2, $3
+    )
+    ON CONFLICT DO NOTHING
+    """
+)
+
+cur.execute("""
+    PREPARE insert_geo_desert (text) AS
+    INSERT INTO geo_desert (desert, country, province) 
+    VALUES (
+        $1, $2, $3
+    )
+    """
+)
+
 class GeoCoord:
     def __init__(self, latitude : float, longitude : float):
         self.latitude = latitude
         self.longitude = longitude
+
+    @property
+    def as_tuple(self) -> Tuple[float]:
+        return (self.latitude, self.longitude)
 
 def display_result(result, max_rows=10):
     # Convert result to DataFrame if it's not already
@@ -137,14 +160,17 @@ def display_result(result, max_rows=10):
     else:
         print(f"{Fore.GREEN}Displayed All Rows: {total_rows}{Style.RESET_ALL}\n")
 
-def execute_statement(query : str, vars : List[Any]):
+def fetch_query(query : str, vars : List[Any]):
     cur.execute(query, vars)
     return cur.fetchall()
+
+def query(query : str, vars : List[Any]):
+    cur.execute(query, vars)
 
 def search_airport(airport : str, max_rows=10) -> None:
     query_vars = ['%' + airport + '%']
 
-    result = execute_statement(
+    result = fetch_query(
         "EXECUTE search_airport (%s)", 
         query_vars
         )
@@ -153,7 +179,7 @@ def search_airport(airport : str, max_rows=10) -> None:
 def language_speakers(country_name : str, max_rows=10) -> None:
     query_vars = [country_name]
 
-    result = execute_statement(
+    result = fetch_query(
         "EXECUTE language_speakers (%s)", 
         query_vars
         )
@@ -220,7 +246,7 @@ def get_province_area(province : str) -> int:
         return area[0]["area"]
     return None
 
-def province_exists(province : str, country_code : str):
+def province_exists(province : str, country_code : str) -> bool:
     cur.execute(
         "EXECUTE check_province (%s, %s)",
         [province, country_code]
@@ -228,13 +254,15 @@ def province_exists(province : str, country_code : str):
 
     return not len(cur.fetchall()) == 0
 
+def desert_exists(desert : str) -> bool:
+    get_desert_area(desert) is not None
+
 def create_desert(
         name : str, 
         area : int,
         province : str, 
         country : str,
-        coordinates : GeoCoord,
-        max_rows=10
+        coordinates : GeoCoord
         ) -> None:
     
     code = get_country_code(country)
@@ -267,14 +295,19 @@ def create_desert(
         if prov_area is not None and area > 30 * prov_area:
             print(f"A desert can be at most 30 times larger than any province it resides in. Area {area} too large for {province}, which has an area of {prov_area}!")
 
-    # query_vars = [name, area, province, country, coordinates]
+    geo_vars = [name, code, province]
+    desert_vars = [name, area, coordinates.as_tuple]
 
-    # result = execute_statement(
-    #     "EXECUTE create_desert (%s)", 
-    #     query_vars
-    #     )
+    if not desert_exists(name):
+        query(
+        "EXECUTE insert_desert (%s, %s, %s)", 
+        desert_vars
+        )
 
-    # display_result(result, max_rows=max_rows)
+    query(
+        "EXECUTE insert_geo_desert (%s, %s, %s)", 
+        geo_vars
+        )
 
 def parse_airport_args(inp_arr : List[str]):
     if len(inp_arr) == 2:
@@ -309,5 +342,8 @@ def main():
 
 if __name__ == "__main__":
     create_desert("test", 100, "Attikis", "Greece", GeoCoord(0, 0))
+
+    cur.execute("SELECT * FROM geo_desert")
+    display_result(cur.fetchall())
 
     main()
