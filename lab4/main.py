@@ -411,7 +411,11 @@ def print_help_page():
 
 def main():
     while True:
-        inp = input("-> ").strip()
+        try:
+            inp = input("-> ").strip()
+        except KeyboardInterrupt:
+            print("\nBye!")
+            break
         inp_arr = inp.split()
 
         match inp_arr[0]:
