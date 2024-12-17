@@ -224,6 +224,8 @@ def get_country_code(country : str) -> str:
     )
 
     country_codes = cur.fetchall()
+    if len(country_codes) == 0:
+        return None
 
     # Check that the country exists, and get the country code
     try:
