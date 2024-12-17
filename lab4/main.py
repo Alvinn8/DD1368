@@ -1,6 +1,6 @@
 import pandas as pd
 import connect
-from typing import List, Any, Tuple
+from typing import List, Any, Set
 from tabulate import tabulate
 from colorama import Fore, Style
 
@@ -43,6 +43,42 @@ cur.execute("""
     FROM province
     WHERE name = $1
     AND country = $2
+    """
+)
+
+cur.execute("""
+    PREPARE get_province (text) AS
+    SELECT
+        province
+    FROM geo_desert
+    WHERE desert = $1
+    """
+)
+
+cur.execute("""
+    PREPARE get_deserts (text) AS
+    SELECT
+        desert
+    FROM geo_desert
+    WHERE country = $1
+    """
+)
+
+cur.execute("""
+    PREPARE get_desert_area (text) AS
+    SELECT
+        area
+    FROM desert
+    WHERE name = $1
+    """
+)
+
+cur.execute("""
+    PREPARE get_province_area (text) AS
+    SELECT
+        area
+    FROM province
+    WHERE name = $1
     """
 )
 
@@ -101,7 +137,6 @@ def display_result(result, max_rows=10):
     else:
         print(f"{Fore.GREEN}Displayed All Rows: {total_rows}{Style.RESET_ALL}\n")
 
-
 def execute_statement(query : str, vars : List[Any]):
     cur.execute(query, vars)
     return cur.fetchall()
@@ -125,44 +160,121 @@ def language_speakers(country_name : str, max_rows=10) -> None:
 
     display_result(result, max_rows=max_rows)
 
-def create_desert(
-        name : str, 
-        area : str, 
-        province : str, 
-        country : str,
-        coordinates : GeoCoord,
-        max_rows=10
-        ) -> None:
-    
+def get_country_code(country : str) -> str:
+    # Fetch the country code
     cur.execute(
         "EXECUTE country_code (%s)",
         [country]
     )
 
     country_codes = cur.fetchall()
+
+    # Check that the country exists, and get the country code
     try:
         code = country_codes[0]["code"]
+        return code
     except KeyError:
-        print(f"Unkown country: {country}")
-        return
-    
+        return None
+
+def get_provinces(desert : str) -> Set[str]:
     cur.execute(
-        "EXECUTE check_province (%s, %s)",
-        [province, code]
+        "EXECUTE get_province (%s)",
+        [desert]
     )
 
-    if len(cur.fetchall()) == 0:
-        print(f"Unkown province {province}")
+    provinces = cur.fetchall()
+
+    return set([p["province"] for p in provinces])
+
+def get_deserts(country_code : str) -> Set[str]:
+    cur.execute(
+        "EXECUTE get_deserts (%s)",
+        [country_code]
+    )
+
+    deserts = cur.fetchall()
+
+    return set([d["desert"] for d in deserts])
+
+def get_desert_area(desert : str) -> int:
+    cur.execute(
+        "EXECUTE get_desert_area (%s)",
+        [desert]
+    )
+
+    area = cur.fetchall()
+
+    if len(area) != 0:
+        return area[0]["area"]
+    return None
+
+def get_province_area(province : str) -> int:
+    cur.execute(
+        "EXECUTE get_province_area (%s)",
+        [province]
+    )
+
+    area = cur.fetchall()
+
+    if len(area) != 0:
+        return area[0]["area"]
+    return None
+
+def province_exists(province : str, country_code : str):
+    cur.execute(
+        "EXECUTE check_province (%s, %s)",
+        [province, country_code]
+    )
+
+    return not len(cur.fetchall()) == 0
+
+def create_desert(
+        name : str, 
+        area : int,
+        province : str, 
+        country : str,
+        coordinates : GeoCoord,
+        max_rows=10
+        ) -> None:
+    
+    code = get_country_code(country)
+
+    if code is None:
+        print(f"Unkown country: {country}.")
+        return
+    
+    if not province_exists(province, code):
+        print(f"Unkown province: {province}. Could not find {province} in {country}.")
+        return
+    
+    if len(d := get_deserts(code)) >= 20:
+        print(f"Countries cannot have more than 20 deserts. Current deserts {d}")
         return
 
-    query_vars = [name, area, province, country, coordinates]
+    # If the desert is already in the database, use the existing value instead of input value
+    desert_area = get_desert_area(name)
+    area = desert_area if desert_area is not None else area
 
-    result = execute_statement(
-        "EXECUTE create_desert (%s)", 
-        query_vars
-        )
+    # Make sure to include the province provided by the user
+    provinces = get_provinces(name).union(set([province]))
 
-    display_result(result, max_rows=max_rows)
+    if len(provinces) >= 9:
+        print(f"Desert cannot span more than 9 provinces. Currently spans {provinces}")
+        return
+
+    for prov in provinces:
+        prov_area = get_province_area(prov)
+        if prov_area is not None and area > 30 * prov_area:
+            print(f"A desert can be at most 30 times larger than any province it resides in. Area {area} too large for {province}, which has an area of {prov_area}!")
+
+    # query_vars = [name, area, province, country, coordinates]
+
+    # result = execute_statement(
+    #     "EXECUTE create_desert (%s)", 
+    #     query_vars
+    #     )
+
+    # display_result(result, max_rows=max_rows)
 
 def parse_airport_args(inp_arr : List[str]):
     if len(inp_arr) == 2:
@@ -196,9 +308,6 @@ def main():
             case _: print(f"Unkown command: {inp_arr[0]}")
 
 if __name__ == "__main__":
-    cur.execute("SELECT * FROM desert")
-    display_result(cur.fetchall())
-
-    # create_desert("test", "test", "Attikis", "Greece", GeoCoord(0, 0))
+    create_desert("test", 100, "Attikis", "Greece", GeoCoord(0, 0))
 
     main()
