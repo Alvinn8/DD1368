@@ -350,6 +350,7 @@ def parse_airport_args(inp_arr : List[str]):
             return
     except Exception as e:
         print(e)
+        return
 
     print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
 
@@ -363,6 +364,7 @@ def parse_language_args(inp_arr : List[str]):
             return
     except Exception as e:
         print(e)
+        return
 
     print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
 
@@ -386,8 +388,26 @@ def parse_display_args(inp_arr : List[str]):
             return
     except Exception as e:
         print(e)
+        return
 
     print(f"Incorrect usage, expected 2 or 3 arguments got {len(inp_arr) - 1}")
+
+def print_help_page():
+    """
+    Prints a formatted help page for the available commands.
+    """
+    print("\n" + "=" * 107)
+    print("            HELP PAGE")
+    print("=" * 107)
+    print("Available Commands:")
+    print()
+    print("  airport [name] [rows (optional)]                         - Search airports by name or IATA code")
+    print("  language [language] [rows (optional)]                    - Search countries that speak the given language")
+    print("  cdesert [name] [area] [province] [country] [coordinates] - Create desert")
+    print("  display [table name] [rows (optional)]                   - Display table")
+    print("  exit                                                     - Exit the program")
+
+    print("=" * 107 + "\n")
 
 def main():
     while True:
@@ -399,6 +419,7 @@ def main():
             case "language": parse_language_args(inp_arr)
             case "cdesert": parse_desert_args(inp_arr)
             case "display": parse_display_args(inp_arr)
+            case "help": print_help_page()
             case "exit": break
             case _: print(f"Unkown command: {inp_arr[0]}")
 
