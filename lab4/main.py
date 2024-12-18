@@ -217,13 +217,8 @@ def language_speakers(country_name : str, max_rows=10) -> None:
     display_result(result, max_rows=max_rows)
 
 def get_country_code(country : str) -> str:
-    # Fetch the country code
-    cur.execute(
-        "EXECUTE country_code (%s)",
-        [country]
-    )
+    country_codes = fetch_query("EXECUTE country_code (%s)", [country])
 
-    country_codes = cur.fetchall()
     if len(country_codes) == 0:
         return None
 
@@ -235,56 +230,36 @@ def get_country_code(country : str) -> str:
         return None
 
 def get_provinces(desert : str) -> Set[str]:
-    cur.execute(
-        "EXECUTE get_province (%s)",
-        [desert]
-    )
-
-    provinces = cur.fetchall()
+    provinces = fetch_query("EXECUTE get_province (%s)", [desert])
 
     return set([p["province"] for p in provinces])
 
 def get_deserts(country_code : str) -> Set[str]:
-    cur.execute(
-        "EXECUTE get_deserts (%s)",
-        [country_code]
-    )
-
-    deserts = cur.fetchall()
+    deserts = fetch_query("EXECUTE get_deserts (%s)", [country_code])
 
     return set([d["desert"] for d in deserts])
 
 def get_desert_area(desert : str) -> int:
-    cur.execute(
-        "EXECUTE get_desert_area (%s)",
-        [desert]
-    )
-
-    area = cur.fetchall()
+    area = fetch_query("EXECUTE get_desert_area (%s)", [desert])
 
     if len(area) != 0:
         return area[0]["area"]
     return None
 
 def get_province_area(province : str) -> int:
-    cur.execute(
-        "EXECUTE get_province_area (%s)",
-        [province]
-    )
-
-    area = cur.fetchall()
+    area = fetch_query("EXECUTE get_province_area (%s)", [province])
 
     if len(area) != 0:
         return area[0]["area"]
     return None
 
 def province_exists(province : str, country_code : str) -> bool:
-    cur.execute(
-        "EXECUTE check_province (%s, %s)",
-        [province, country_code]
-    )
-
-    return not len(cur.fetchall()) == 0
+    return not len(
+        fetch_query(
+            "EXECUTE check_province (%s, %s)",
+            [province, country_code]
+            )
+        ) == 0
 
 def desert_exists(desert : str) -> bool:
     get_desert_area(desert) is not None
